@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lucky Mandarin Trainer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <h1>Lucky Mandarin Trainer</h1>
+        <p>Practice Chinese characters with fast, Duolingo-style rounds.</p>
+      </header>
+
+      <section class="card progress-card" aria-live="polite">
+        <div class="progress-meta">
+          <span id="round-label">Round 1</span>
+          <span id="score-label">Score: 0</span>
+          <span id="streak-label">Streak: 0</span>
+        </div>
+        <div class="progress-track">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+      </section>
+
+      <section class="card question-card" aria-live="polite">
+        <p class="question">Select the meaning of:</p>
+        <p id="character" class="character">恭</p>
+        <div id="choices" class="choices"></div>
+        <p id="feedback" class="feedback"></p>
+      </section>
+
+      <section class="card controls">
+        <button id="next-btn" disabled>Next</button>
+        <button id="restart-btn" class="ghost">Restart</button>
+      </section>
+
+      <section id="result" class="card result hidden" aria-live="polite"></section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

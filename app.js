@@ -1,15 +1,15 @@
 const vocab = [
-  { hanzi: "恭", pinyin: "gung1", meaning: "respectful" },
-  { hanzi: "喜", pinyin: "hei2", meaning: "joy" },
-  { hanzi: "發", pinyin: "faat3", meaning: "to prosper" },
-  { hanzi: "財", pinyin: "coi4", meaning: "wealth" },
-  { hanzi: "新", pinyin: "san1", meaning: "new" },
-  { hanzi: "年", pinyin: "nin4", meaning: "year" },
-  { hanzi: "快", pinyin: "faai3", meaning: "fast" },
-  { hanzi: "樂", pinyin: "lok6", meaning: "happiness" },
-  { hanzi: "福", pinyin: "fuk1", meaning: "blessing" },
-  { hanzi: "紅", pinyin: "hung4", meaning: "red" },
-  { hanzi: "包", pinyin: "baau1", meaning: "packet" },
+  { hanzi: "恭", pinyin: "gung1 ", meaning: "respectful" },
+  { hanzi: "喜", pinyin: "hei2 ", meaning: "joy" },
+  { hanzi: "發", pinyin: "faat3 ", meaning: "to prosper" },
+  { hanzi: "財", pinyin: "coi4 ", meaning: "wealth" },
+  { hanzi: "新", pinyin: "san1 ", meaning: "new" },
+  { hanzi: "年", pinyin: "nin4 ", meaning: "year" },
+  { hanzi: "快", pinyin: "faai3 ", meaning: "fast" },
+  { hanzi: "樂", pinyin: "lok6 ", meaning: "happiness" },
+  { hanzi: "福", pinyin: "fuk1 ", meaning: "blessing" },
+  { hanzi: "紅", pinyin: "hung4 ", meaning: "red" },
+  { hanzi: "包", pinyin: "baau1 ", meaning: "packet" },
 ];
 
 const confusableChoices = {

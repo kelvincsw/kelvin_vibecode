@@ -15,7 +15,7 @@ const vocab = [
 const phrasePatterns = [
   ["恭", "喜", "發", "財"],
   ["新", "年", "快", "樂"],
-  ["紅", "包", "福", "氣"],
+  ["紅", "包", "福", "到"],
 ];
 
 const confusableChoices = {
@@ -60,16 +60,29 @@ function sampleWrongHanzi(answerHanzi, count = 3) {
   return shuffle(pool).slice(0, count);
 }
 
+function normalizeOptions(answer, candidates) {
+  const unique = [...new Set([answer, ...candidates])].filter(Boolean);
+  const fallback = sampleWrongHanzi(answer, 6);
+  for (const item of fallback) {
+    if (!unique.includes(item)) {
+      unique.push(item);
+    }
+    if (unique.length >= 4) {
+      break;
+    }
+  }
+  return shuffle(unique.slice(0, 4));
+}
+
 function buildMeaningQuestion(entry) {
   const wrongChoices = sampleWrongHanzi(entry.hanzi, 3);
-  const options = shuffle([entry.hanzi, ...wrongChoices]);
 
   return {
     type: "meaning",
     question: `Which Chinese word below means ${entry.meaning}?`,
-    prompt: `(${entry.pinyin})`,
+    prompt: "Choose one Chinese character.",
     answer: entry.hanzi,
-    options,
+    options: normalizeOptions(entry.hanzi, wrongChoices),
     explanation: `${entry.hanzi} means “${entry.meaning}”.`,
   };
 }
@@ -77,24 +90,42 @@ function buildMeaningQuestion(entry) {
 function buildMissingWordQuestion(entry) {
   const phrase = phrasePatterns.find((pattern) => pattern.includes(entry.hanzi)) || ["恭", "喜", "發", "財"];
   const masked = phrase.filter((char) => char !== entry.hanzi).join("");
-  const providedWrong = confusableChoices[entry.hanzi] || sampleWrongHanzi(entry.hanzi, 3);
-  const options = shuffle([entry.hanzi, ...providedWrong.slice(0, 3)]);
+  const providedWrong = confusableChoices[entry.hanzi] || [];
 
   return {
     type: "missing",
     question: `${masked}, which word is missing?`,
-    prompt: "Choose the best Chinese character to complete the phrase.",
+    prompt: "Choose one Chinese character.",
     answer: entry.hanzi,
-    options,
+    options: normalizeOptions(entry.hanzi, providedWrong),
     explanation: `${phrase.join("")} is the full phrase.`,
   };
 }
 
-function buildRound(entry) {
-  if (Math.random() < 0.5) {
-    return buildMissingWordQuestion(entry);
+function buildRound(entry, roundNumber) {
+  if (roundNumber === 0) {
+    return {
+      type: "missing",
+      question: "喜發財, which word is missing?",
+      prompt: "Choose one Chinese character.",
+      answer: "恭",
+      options: ["恭", "工", "公", "紅"],
+      explanation: "恭喜發財 is the full phrase.",
+    };
   }
-  return buildMeaningQuestion(entry);
+
+  if (roundNumber === 1) {
+    return {
+      type: "meaning",
+      question: "Which Chinese word below means joy?",
+      prompt: "Choose one Chinese character.",
+      answer: "喜",
+      options: ["喜", "恭", "年", "包"],
+      explanation: "喜 means “joy”.",
+    };
+  }
+
+  return Math.random() < 0.5 ? buildMissingWordQuestion(entry) : buildMeaningQuestion(entry);
 }
 
 function updateMeta() {
@@ -104,7 +135,23 @@ function updateMeta() {
   progressBar.style.width = `${(roundIndex / rounds.length) * 100}%`;
 }
 
+function renderChoices(options) {
+  choicesEl.innerHTML = "";
+  options.forEach((choice, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "choice-btn";
+    btn.textContent = `${idx + 1}. ${choice}`;
+    btn.dataset.value = choice;
+    btn.addEventListener("click", () => handleChoice(btn, choice));
+    choicesEl.appendChild(btn);
+  });
+}
+
 function renderRound() {
+  if (!questionEl || !promptEl || !choicesEl) {
+    return;
+  }
+
   updateMeta();
   resultEl.classList.add("hidden");
   feedbackEl.textContent = "";
@@ -112,20 +159,16 @@ function renderRound() {
   questionLocked = false;
   nextBtn.disabled = true;
 
-  const current = rounds[roundIndex];
-  currentRound = buildRound(current);
+  const current = rounds[roundIndex] || vocab[0];
+  currentRound = buildRound(current, roundIndex);
+
+  if (!currentRound.options || currentRound.options.length === 0) {
+    currentRound.options = normalizeOptions(currentRound.answer, sampleWrongHanzi(currentRound.answer, 3));
+  }
 
   questionEl.textContent = currentRound.question;
   promptEl.textContent = currentRound.prompt;
-  choicesEl.innerHTML = "";
-
-  currentRound.options.forEach((choice) => {
-    const btn = document.createElement("button");
-    btn.className = "choice-btn";
-    btn.textContent = choice;
-    btn.addEventListener("click", () => handleChoice(btn, choice));
-    choicesEl.appendChild(btn);
-  });
+  renderChoices(currentRound.options);
 }
 
 function handleChoice(button, choice) {
@@ -139,7 +182,7 @@ function handleChoice(button, choice) {
 
   allButtons.forEach((btn) => {
     btn.disabled = true;
-    if (btn.textContent === currentRound.answer) {
+    if (btn.dataset.value === currentRound.answer) {
       btn.classList.add("correct");
     }
   });

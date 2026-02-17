@@ -12,7 +12,6 @@ const vocab = [
   { hanzi: "包", pinyin: "baau1", meaning: "packet" },
 ];
 
-
 const confusableChoices = {
   恭: ["工", "公", "紅"],
   喜: ["嬉", "吉", "囍"],

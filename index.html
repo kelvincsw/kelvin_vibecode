@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lucky Mandarin Trainer</title>
+    <title>學好中文小遊戲</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app">
-      <header class="hero">
-        <h1>Lucky Mandarin Trainer</h1>
-        <p>Practice Chinese characters with fast, Duolingo-style rounds.</p>
+      <header class="hero card">
+        <h1>🧧🏮 學好中文小遊戲 🐉✨</h1>
+        <p>Answer in Chinese characters and practice festive vocabulary in quick rounds.</p>
       </header>
 
       <section class="card progress-card" aria-live="polite">
@@ -25,8 +25,8 @@
       </section>
 
       <section class="card question-card" aria-live="polite">
-        <p class="question">Select the meaning of:</p>
-        <p id="character" class="character">恭</p>
+        <p id="question" class="question">Which Chinese word below means joy?</p>
+        <p id="prompt" class="prompt">喜發財, which word is missing?</p>
         <div id="choices" class="choices"></div>
         <p id="feedback" class="feedback"></p>
       </section>

@@ -12,24 +12,18 @@ const vocab = [
   { hanzi: "包", pinyin: "bāo", meaning: "packet" },
 ];
 
-const phrasePatterns = [
-  ["恭", "喜", "發", "財"],
-  ["新", "年", "快", "樂"],
-  ["紅", "包", "福", "到"],
-];
-
 const confusableChoices = {
   恭: ["工", "公", "紅"],
-  喜: ["嬉", "吉", "新"],
+  喜: ["嬉", "吉", "囍"],
   發: ["友", "髮", "福"],
   財: ["才", "材", "福"],
-  新: ["亲", "薪", "年"],
-  年: ["午", "舛", "包"],
-  快: ["块", "筷", "福"],
+  新: ["亲", "薪", "斤"],
+  年: ["午", "舛", "千"],
+  快: ["块", "筷", "决"],
   樂: ["藥", "櫟", "發"],
   福: ["幅", "副", "喜"],
   紅: ["江", "工", "恭"],
-  包: ["句", "勺", "年"],
+  包: ["句", "勺", "已"],
 };
 
 const rounds = shuffle([...vocab]);
@@ -55,77 +49,17 @@ function shuffle(items) {
   return [...items].sort(() => Math.random() - 0.5);
 }
 
-function sampleWrongHanzi(answerHanzi, count = 3) {
-  const pool = vocab.filter((item) => item.hanzi !== answerHanzi).map((item) => item.hanzi);
-  return shuffle(pool).slice(0, count);
-}
-
-function normalizeOptions(answer, candidates) {
-  const unique = [...new Set([answer, ...candidates])].filter(Boolean);
-  const fallback = sampleWrongHanzi(answer, 6);
-  for (const item of fallback) {
-    if (!unique.includes(item)) {
-      unique.push(item);
-    }
-    if (unique.length >= 4) {
-      break;
-    }
-  }
-  return shuffle(unique.slice(0, 4));
-}
-
-function buildMeaningQuestion(entry) {
-  const wrongChoices = sampleWrongHanzi(entry.hanzi, 3);
+function buildRound(entry) {
+  const distractors = confusableChoices[entry.hanzi] || [];
+  const options = shuffle([entry.hanzi, ...distractors]).slice(0, 4);
 
   return {
-    type: "meaning",
-    question: `Which Chinese word below means ${entry.meaning}?`,
-    prompt: "Choose one Chinese character.",
+    question: `Which one is the correct choice of ${entry.meaning}?`,
+    prompt: `(${entry.pinyin})`,
     answer: entry.hanzi,
-    options: normalizeOptions(entry.hanzi, wrongChoices),
+    options,
     explanation: `${entry.hanzi} means “${entry.meaning}”.`,
   };
-}
-
-function buildMissingWordQuestion(entry) {
-  const phrase = phrasePatterns.find((pattern) => pattern.includes(entry.hanzi)) || ["恭", "喜", "發", "財"];
-  const masked = phrase.filter((char) => char !== entry.hanzi).join("");
-  const providedWrong = confusableChoices[entry.hanzi] || [];
-
-  return {
-    type: "missing",
-    question: `${masked}, which word is missing?`,
-    prompt: "Choose one Chinese character.",
-    answer: entry.hanzi,
-    options: normalizeOptions(entry.hanzi, providedWrong),
-    explanation: `${phrase.join("")} is the full phrase.`,
-  };
-}
-
-function buildRound(entry, roundNumber) {
-  if (roundNumber === 0) {
-    return {
-      type: "missing",
-      question: "喜發財, which word is missing?",
-      prompt: "Choose one Chinese character.",
-      answer: "恭",
-      options: ["恭", "工", "公", "紅"],
-      explanation: "恭喜發財 is the full phrase.",
-    };
-  }
-
-  if (roundNumber === 1) {
-    return {
-      type: "meaning",
-      question: "Which Chinese word below means joy?",
-      prompt: "Choose one Chinese character.",
-      answer: "喜",
-      options: ["喜", "恭", "年", "包"],
-      explanation: "喜 means “joy”.",
-    };
-  }
-
-  return Math.random() < 0.5 ? buildMissingWordQuestion(entry) : buildMeaningQuestion(entry);
 }
 
 function updateMeta() {
@@ -137,10 +71,10 @@ function updateMeta() {
 
 function renderChoices(options) {
   choicesEl.innerHTML = "";
-  options.forEach((choice, idx) => {
+  options.forEach((choice) => {
     const btn = document.createElement("button");
     btn.className = "choice-btn";
-    btn.textContent = `${idx + 1}. ${choice}`;
+    btn.textContent = choice;
     btn.dataset.value = choice;
     btn.addEventListener("click", () => handleChoice(btn, choice));
     choicesEl.appendChild(btn);
@@ -148,10 +82,6 @@ function renderChoices(options) {
 }
 
 function renderRound() {
-  if (!questionEl || !promptEl || !choicesEl) {
-    return;
-  }
-
   updateMeta();
   resultEl.classList.add("hidden");
   feedbackEl.textContent = "";
@@ -159,12 +89,8 @@ function renderRound() {
   questionLocked = false;
   nextBtn.disabled = true;
 
-  const current = rounds[roundIndex] || vocab[0];
-  currentRound = buildRound(current, roundIndex);
-
-  if (!currentRound.options || currentRound.options.length === 0) {
-    currentRound.options = normalizeOptions(currentRound.answer, sampleWrongHanzi(currentRound.answer, 3));
-  }
+  const current = rounds[roundIndex];
+  currentRound = buildRound(current);
 
   questionEl.textContent = currentRound.question;
   promptEl.textContent = currentRound.prompt;
@@ -210,7 +136,7 @@ function showResult() {
   resultEl.innerHTML = `
     <h2>Lesson complete 🎉</h2>
     <p>You scored <strong>${score}</strong> points (${percent}%).</p>
-    <p>Great work answering both English-to-Chinese and missing-word phrase questions.</p>
+    <p>Great work learning festive Chinese words.</p>
   `;
   questionEl.textContent = "All rounds complete!";
   promptEl.textContent = "Press Restart to practice again.";
